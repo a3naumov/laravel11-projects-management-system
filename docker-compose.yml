@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+  nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}_nginx
+    image: nginx:1.25.4-alpine3.18
+    environment:
+      DOMAIN_NAME: '${DOMAIN_NAME}'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - type: bind
+        source: ./docker/nginx/templates
+        target: /etc/nginx/templates
+      - type: bind
+        source: ./docker/nginx/certs
+        target: /etc/nginx/certs
+      - type: bind
+        source: ./src
+        target: /var/www/src
+    working_dir: /var/www/src
+  php:
+    container_name: ${COMPOSE_PROJECT_NAME}_php
+    build:
+      context: ./docker/php
+    image: ${COMPOSE_PROJECT_NAME}_php
+    environment:
+      PHP_XDEBUG_ENABLE: ${PHP_XDEBUG_ENABLE}
+      PHP_IDE_CONFIG: 'serverName=${IDE_CONFIG_SERVER_NAME}'
+    volumes:
+      - type: bind
+        source: ./src
+        target: /var/www/src
+    working_dir: /var/www/src
+  postgres:
+    container_name: ${COMPOSE_PROJECT_NAME}_postgres
+    image: postgres:16.2-alpine3.19
+    environment:
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+    ports:
+      - '5432:5432'
+    volumes:
+      - type: volume
+        source: postgres-data
+        target: /var/lib/postgresql/data
+  node:
+    container_name: ${COMPOSE_PROJECT_NAME}_node
+    image: node:20.12.1-alpine3.19
+    tty: true
+    volumes:
+      - ./src:/var/www/src
+    working_dir: /var/www/src
+
+volumes:
+  postgres-data:
+    driver: local
