@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\Project\Status;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
@@ -42,10 +44,20 @@ class Project extends Model
     /**
      * Get the tasks for the Project.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Task>
+     * @return HasMany<Task>
      */
-    public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function tasks(): HasMany
     {
         return $this->hasMany(Task::class, 'project_id', 'id', 'id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id', 'id');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by', 'id', 'id');
     }
 }
